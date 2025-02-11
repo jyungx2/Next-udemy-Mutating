@@ -1,10 +1,13 @@
+"use client"; // use server 과 함께 사용되지 못함 -> Next.js는 한 컴포넌트를 양쪽 사이드에서 동시에 실행될 수 없음!
+
+import { useFormState } from "react-dom";
 import FormSubmit from "@/components/form-submit";
 import { storePost } from "@/lib/posts";
 import { redirect } from "next/navigation";
 
 export default function NewPostPage() {
   async function createPost(formData) {
-    // server action
+    // ✅ server action
     // 1. 비동기 함수 처리 (async) & 자동으로 객체 형태의 formData를 매개변수로 받음
     // 2. 이 함수는 form 요소의 action prop 값으로 등록 ...리액트 프로젝트에서만 함수를 매개변수로 받을 수 있음(바닐라 JS에서 action prop = 폼제출을 처리하는 URL일 뿐!)
     // 3. server action을 담당하는 함수는 내부에 'use server' 작성 필수 ... React & Next.js에게 이 함수를 등록한 form은 client form action이 아닌, server action를 수행한다고 말하는 역할의 코드
@@ -15,7 +18,26 @@ export default function NewPostPage() {
     const image = formData.get("image");
     const content = formData.get("content");
 
-    // lib/posts.js 파일에 storePost 함수 정의돼있음.
+    // ✅ server-side validation
+    let errors = [];
+
+    if (!title || title.trim().length === 0) {
+      errors.push("Title is required");
+    }
+
+    if (!content || content.trim().length === 0) {
+      errors.push("Content is required");
+    }
+
+    if (!image) {
+      errors.push("Image is required");
+    }
+
+    if (errors.length > 0) {
+      return { errors };
+    }
+
+    // ✅ lib/posts.js 파일에 storePost 함수 정의돼있음.
     storePost({
       imageUrl: "", // 아직 이미지 URL을 가져오지 못하기 때문에 빈 스트링으로 등록
       title,
@@ -27,10 +49,12 @@ export default function NewPostPage() {
     redirect("/feed");
   }
 
+  const [state, formAction] = useFormState(createPost, {});
+
   return (
     <>
       <h1>Create a new post</h1>
-      <form action={createPost}>
+      <form action={formAction}>
         <p className="form-control">
           <label htmlFor="title">Title</label>
           <input type="text" id="title" name="title" />

@@ -1,4 +1,6 @@
+import FormSubmit from "@/components/form-submit";
 import { storePost } from "@/lib/posts";
+import { redirect } from "next/navigation";
 
 export default function NewPostPage() {
   async function createPost(formData) {
@@ -21,6 +23,8 @@ export default function NewPostPage() {
       userId: 1, // 로그인 메커니즘이 구현되지 못한 상태.. 일단 무조건 1으로 설정
       // ✅ 똑같이 Form을 작성해 제출하고 나서, Feed 페이지로 가보면 방금 등록한 post가 보이는 것을 확인할 수 있다. (feed 페이지에서 getStore()를 불러와 렌더링하고 있기 때문)
     });
+
+    redirect("/feed");
   }
 
   return (
@@ -45,8 +49,7 @@ export default function NewPostPage() {
           <textarea id="content" name="content" rows="5" />
         </p>
         <p className="form-actions">
-          <button type="reset">Reset</button>
-          <button>Create Post</button>
+          <FormSubmit />
         </p>
       </form>
     </>

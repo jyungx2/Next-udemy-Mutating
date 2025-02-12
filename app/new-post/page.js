@@ -1,19 +1,19 @@
-"use client"; // use server 과 함께 사용되지 못함 -> Next.js는 한 컴포넌트를 양쪽 사이드에서 동시에 실행될 수 없음!
-
-import { useFormState } from "react-dom";
-import FormSubmit from "@/components/form-submit";
+import Postform from "@/components/post-form";
 import { storePost } from "@/lib/posts";
 import { redirect } from "next/navigation";
 
 export default function NewPostPage() {
-  async function createPost(formData) {
+  // 174. foodies 앱과 다르게 Page에 서버액션을 남기고, useFormState 코드와 JSX 리턴코드를 components폴더로 분리함
+  // -> 두 가지 방식 모두 server action(서버 컴포넌트)과 클라이언트 컴포넌트를 나누기 위함!
+  // 이렇게 서버액션을 form태그의 action속성으로 바로 연결하지 않고 useFormState훅을 이용해 리턴받은 formAction값으로 form태그의 action 속성값으로 등록하면, 서버액션의 매개변수가 하나 더 추가되어 serverAction(prevState, formData)로 코드 변경 필요
+  async function createPost(prevState, formData) {
     // ✅ server action
     // 1. 비동기 함수 처리 (async) & 자동으로 객체 형태의 formData를 매개변수로 받음
     // 2. 이 함수는 form 요소의 action prop 값으로 등록 ...리액트 프로젝트에서만 함수를 매개변수로 받을 수 있음(바닐라 JS에서 action prop = 폼제출을 처리하는 URL일 뿐!)
     // 3. server action을 담당하는 함수는 내부에 'use server' 작성 필수 ... React & Next.js에게 이 함수를 등록한 form은 client form action이 아닌, server action를 수행한다고 말하는 역할의 코드
 
     // console.log(title, image, content) // ✅ 실제로 form을 작성 후 제출버튼을 누르면, 컨솔창이 아닌 터미널에서 코드 결과가 나타나는 것을 볼 수 있음 -> 서버에서만 실행되는 서버액션이라는 것을 증명.
-    ("use server");
+    "use server";
     const title = formData.get("title");
     const image = formData.get("image");
     const content = formData.get("content");
@@ -29,7 +29,8 @@ export default function NewPostPage() {
       errors.push("Content is required");
     }
 
-    if (!image) {
+    // !image만 써주면 이미지 등록 안해도 오류메시지 출력 안됨 .. image는 항상 오브젝트이기 때문
+    if (!image || image.size === 0) {
       errors.push("Image is required");
     }
 
@@ -49,33 +50,5 @@ export default function NewPostPage() {
     redirect("/feed");
   }
 
-  const [state, formAction] = useFormState(createPost, {});
-
-  return (
-    <>
-      <h1>Create a new post</h1>
-      <form action={formAction}>
-        <p className="form-control">
-          <label htmlFor="title">Title</label>
-          <input type="text" id="title" name="title" />
-        </p>
-        <p className="form-control">
-          <label htmlFor="image">Image URL</label>
-          <input
-            type="file"
-            accept="image/png, image/jpeg"
-            id="image"
-            name="image"
-          />
-        </p>
-        <p className="form-control">
-          <label htmlFor="content">Content</label>
-          <textarea id="content" name="content" rows="5" />
-        </p>
-        <p className="form-actions">
-          <FormSubmit />
-        </p>
-      </form>
-    </>
-  );
+  return <Postform action={createPost} />;
 }

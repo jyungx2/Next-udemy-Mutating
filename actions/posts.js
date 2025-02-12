@@ -16,7 +16,7 @@ export async function createPost(prevState, formData) {
   // 3. server action을 담당하는 함수는 내부에 'use server' 작성 필수 ... React & Next.js에게 이 함수를 등록한 form은 client form action이 아닌, server action를 수행한다고 말하는 역할의 코드
 
   // console.log(title, image, content) // ✅ 실제로 form을 작성 후 제출버튼을 누르면, 컨솔창이 아닌 터미널에서 코드 결과가 나타나는 것을 볼 수 있음 -> 서버에서만 실행되는 서버액션이라는 것을 증명.
-  "use server";
+  ("use server");
   const title = formData.get("title");
   const image = formData.get("image");
   const content = formData.get("content");
@@ -59,6 +59,7 @@ export async function createPost(prevState, formData) {
     // ✅ 똑같이 Form을 작성해 제출하고 나서, Feed 페이지로 가보면 방금 등록한 post가 보이는 것을 확인할 수 있다. (feed 페이지에서 getStore()를 불러와 렌더링하고 있기 때문)
   });
 
+  revalidatePath("/", "layout"); // 좋아요 기능과 마찬가지로 이동하는 페이지(/feed - page.js)상에 최신 데이터를 바로 반영할 수 있도록 기존 캐시를 강제 무효화 및 새로운 캐시를 갱신!
   redirect("/feed");
 }
 

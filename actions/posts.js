@@ -1,5 +1,6 @@
 "use server";
 
+import { uploadImage } from "@/lib/cloudinary";
 import { storePost } from "@/lib/posts";
 import { redirect } from "next/navigation";
 
@@ -39,9 +40,18 @@ export async function createPost(prevState, formData) {
     return { errors };
   }
 
+  let imageUrl;
+  try {
+    imageUrl = await uploadImage(image);
+  } catch (error) {
+    throw new Error(
+      "Image upload failed, post was not created. Please try again later."
+    );
+  }
+
   // ✅ lib/posts.js 파일에 storePost 함수 정의돼있음.
-  storePost({
-    imageUrl: "", // 아직 이미지 URL을 가져오지 못하기 때문에 빈 스트링으로 등록
+  await storePost({
+    imageUrl: imageUrl, // 아직 이미지 URL을 가져오지 못하기 때문에 빈 스트링으로 등록
     title,
     content,
     userId: 1, // 로그인 메커니즘이 구현되지 못한 상태.. 일단 무조건 1으로 설정

@@ -2,6 +2,7 @@
 
 import { uploadImage } from "@/lib/cloudinary";
 import { storePost, updatePostLikeStatus } from "@/lib/posts";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 // 174. foodies 앱과 다르게 Page에 서버액션을 남기고, useFormState 코드와 JSX 리턴코드를 components폴더로 분리함
@@ -63,5 +64,6 @@ export async function createPost(prevState, formData) {
 
 // 178.
 export async function togglePostLikeStatus(postId) {
-  updatePostLikeStatus(postId, 2);
+  await updatePostLikeStatus(postId, 2);
+  revalidatePath("/", "layout"); // make sure that all pages pick up the latest data.
 }
